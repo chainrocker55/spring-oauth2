@@ -9,6 +9,7 @@ object ParamConst {
     const val STATE = "state"
     const val CODE = "code"
     const val GRANT_TYPE = "grant_type"
+    const val REFRESH_TOKEN = "refresh_token"
     const val USER_ID = "user_id"
     const val EMAIL = "email"
 }

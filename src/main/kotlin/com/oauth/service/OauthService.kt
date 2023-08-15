@@ -144,24 +144,34 @@ class OauthService(
         )
     }
 
-//    fun refreshToken(accessToken: String, clientId: String, clientSecret: String): AuthResponse {
-//        val authJwt =
-//            tokenService.generateAuthToken(
-//                tokenId = id,
-//                email = authenticateDetail.email,
-//                userId = authenticateDetail.userId,
-//                clientId = clientId,
-//                scopes = authenticateDetail.scope
-//            )
-//        val tokenExpireTime = appPropertiesConfig.expireAccessToken.toInt() * 60
-//        return AuthResponse(
-//            accessToken = authJwt.accessToken,
-//            refreshToken = authJwt.refreshToken,
-//            scope = authenticateDetail.scope,
-//            expiresIn = tokenExpireTime,
-//            tokenType = TokenServiceImpl.TOKEN_TYPE
-//        )
-//    }
+    fun refreshToken(accessToken: String, clientSecret: String): AuthResponse {
+        try {
+            val claims = tokenService.decodeAccessToken(accessToken)
+            val email = claims[TokenServiceImpl.CLAIM_EMAIL].toString()
+            val userId = claims[TokenServiceImpl.CLAIM_USER_ID].toString()
+            val scope = claims[TokenServiceImpl.CLAIM_SCOPE].toString()
+            logger.info("Generate token userId: $userId, scope: $scope")
+            val authJwt =
+                tokenService.generateAuthToken(
+                    tokenId = claims.id,
+                    email = email,
+                    userId = userId,
+                    clientId = claims.audience,
+                    scopes = scope
+                )
+            val tokenExpireTime = appPropertiesConfig.expireAccessToken.toInt() * 60
+            return AuthResponse(
+                accessToken = authJwt.accessToken,
+                refreshToken = authJwt.refreshToken,
+                scope = scope,
+                expiresIn = tokenExpireTime,
+                tokenType = TokenServiceImpl.TOKEN_TYPE
+            )
+        } catch (ex: Exception) {
+            logger.error("Cannot decode access token error", ex)
+            throw ex
+        }
+    }
 
     fun generateOauthAccessToken(
         tokenId: String,

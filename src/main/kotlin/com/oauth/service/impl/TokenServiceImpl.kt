@@ -6,6 +6,7 @@ import com.oauth.service.KeyService
 import com.oauth.service.TokenService
 import com.oauth.util.DateUtils
 import com.oauth.util.JwtTokenUtil
+import io.jsonwebtoken.Claims
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
@@ -91,6 +92,11 @@ class TokenServiceImpl(
         )
         logger.info("Success generate refresh token")
         return token
+    }
+
+    override fun decodeAccessToken(token: String): Claims {
+        val keypair = keyService.getAccessTokenKeypair()
+        return JwtTokenUtil().decodeJwt(token, keypair.public)
     }
 
 

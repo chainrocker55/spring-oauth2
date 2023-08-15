@@ -6,7 +6,6 @@ import com.oauth.data.enum.LoginStatus
 import com.oauth.data.enum.LoginType
 import com.oauth.exception.InvalidRequestException
 import com.oauth.exception.UnAuthenticatedException
-import com.oauth.model.request.AuthCodeRequest
 import com.oauth.model.request.AuthRequest
 import com.oauth.model.request.AuthTokenRequest
 import com.oauth.model.response.AuthResponse
@@ -80,6 +79,7 @@ class OauthController(
         @RequestParam(name = ParamConst.CLIENT_SECRET, required = false) clientSecret: String? = null,
         @RequestParam(name = ParamConst.REDIRECT_URI, required = true) redirectUri: String,
         @RequestParam(name = ParamConst.CODE, required = false) code: String,
+        @RequestParam(name = ParamConst.REFRESH_TOKEN, required = false) refreshToken: String? = null,
         httpRes: HttpServletResponse
     ): BaseResponse<Any> {
         logger.info("Authorizing grant_type: $grantType, client_id: $clientId, redirect_uri: $redirectUri")
@@ -97,7 +97,8 @@ class OauthController(
             }
 
             OauthGrantType.REFRESH_TOKEN -> {
-                //Not support
+                val response = oauthService.refreshToken(refreshToken!!, clientSecret!!)
+                return BaseResponse.success(response)
             }
 
             OauthGrantType.PASSWORD -> {
@@ -117,29 +118,6 @@ class OauthController(
 
     }
 
-    @PostMapping("/create/auth-code")
-    fun generateAuthCode(
-        @Valid @RequestBody req: AuthCodeRequest,
-        httpRes: HttpServletResponse
-    ): BaseResponse<Any> {
-        logger.info("Generate auth_code of client_id: ${req.clientId}, redirect_uri: ${req.redirectUrl}")
-        val code = oauthService.generateAuthCode(
-            clientId = req.clientId,
-            userId = req.userId,
-            email = req.email,
-            scope = req.scope,
-            redirectUri = req.redirectUrl,
-        )
-        val url =
-            URIBuilder(req.redirectUrl).addParameter(ParamConst.STATE, req.state).addParameter(ParamConst.CODE, code)
-                .build()
-                .toURL().toString()
-        httpRes.sendRedirect(url)
-        logger.info("Generate auth_code of client_id: ${req.clientId} success redirect to: $url")
-        return BaseResponse.success(data = url)
-
-    }
-
     @PostMapping("/create/token")
     fun createToken(
         @Valid @RequestBody req: AuthTokenRequest,
@@ -147,11 +125,7 @@ class OauthController(
         logger.info("Generate token of user: ${req.userId}, client_id: ${req.clientId}")
         val id = UUID.randomUUID().toString()
         val response = oauthService.generateOauthAccessToken(
-            tokenId = id,
-            email = req.email,
-            userId = req.userId,
-            clientId = req.clientId,
-            scopes = req.scope
+            tokenId = id, email = req.email, userId = req.userId, clientId = req.clientId, scopes = req.scope
         )
         logger.info("Generate token of user: ${req.userId}, client_id: ${req.clientId} success")
         return BaseResponse.success(data = response)
@@ -193,6 +167,20 @@ class OauthController(
                 userAgentUtil = userAgentUtil,
                 sourceIp = sourceIp
             )
+            logger.info("Generate auth_code of client_id: ${req.clientId}, redirect_uri: ${req.redirectUrl}")
+            val code = oauthService.generateAuthCode(
+                clientId = req.clientId,
+                userId = req.userId,
+                email = req.email,
+                scope = req.scope,
+                redirectUri = req.redirectUrl,
+            )
+            //you can put otp step or term and condition here
+            val url = URIBuilder(req.redirectUrl).addParameter(ParamConst.STATE, req.state)
+                .addParameter(ParamConst.CODE, code).build().toURL().toString()
+            httpRes.sendRedirect(url)
+            logger.info("Generate auth_code of client_id: ${req.clientId} success redirect to: $url")
+
             return BaseResponse.success(
                 AuthResponse(
                     accessToken = accessToken,

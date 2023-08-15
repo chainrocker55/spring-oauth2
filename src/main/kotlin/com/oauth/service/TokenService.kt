@@ -1,6 +1,7 @@
 package com.oauth.service
 
 import com.oauth.model.AuthJwtToken
+import io.jsonwebtoken.Claims
 
 
 interface TokenService {
@@ -27,4 +28,5 @@ interface TokenService {
         clientId: String,
         scopes: String
     ): String
+    fun decodeAccessToken(token: String): Claims
 }
