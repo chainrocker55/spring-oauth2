@@ -1,0 +1,112 @@
+server:
+  port: ${AUTH_SERVICE_PORT:8911}
+spring:
+  main:
+    banner-mode: "off"
+  application:
+    name: oauth-service
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: ${DATASOURCE_URL:jdbc:mysql://localhost:3306/innovestx_oauth?characterEncoding=UTF-8&useSSL=false&allowPublicKeyRetrieval=true}
+    hikari:
+      connection-timeout: ${DATASOURCE_CONNECTION_TIMEOUT:10000}
+      validation-timeout: ${DATASOURCE_VALIDATION_TIMEOUT:5000}
+      idle-timeout: ${DATASOURCE_IDLE_TIMEOUT:600000}
+      max-lifetime: ${DATASOURCE_MAX_LIFETIME:1800000}
+      minimum-idle: ${DATASOURCE_MINIMUM_IDLE:20}
+      maximum-pool-size: ${DATASOURCE_MAX_POOL:100}
+      leak-detection-threshold: ${DATASOURCE_LEAK_DETECTION_THRESHOLD:0}
+      username: ${DATASOURCE_USERNAME:root}
+      password: ${DATASOURCE_PASSWORD:password}
+      connection-test-query: "SELECT 1 FROM DUAL"
+  jpa:
+    hibernate.ddl-auto: ${HIBERNATE_DDL_AUTO:none}
+    show-sql: true
+    open-in-view: false
+    generate-ddl: ${GENERATE_DDL_AUTO:false}
+    database-platform: org.hibernate.dialect.MySQLDialect
+    properties:
+      jakarta:
+        persistence:
+          sharedCache:
+            mode: UNSPECIFIED
+      hibernate:
+        format_sql: false
+        dialect:
+          storage_engine: innodb
+        jdbc:
+          time_zone: Asia/Bangkok
+  jackson:
+    time-zone: Asia/Bangkok
+    deserialization:
+      adjust_dates_to_context_time_zone: true
+  cloud:
+    open-feign:
+      metrics:
+        enabled: true
+      client:
+        config:
+          default:
+            connectTimeout: 5000
+            readTimeout: 5000
+            loggerLevel: basic
+      lazy-attributes-resolution: true
+
+management:
+  endpoint:
+    health:
+      show-details: "ALWAYS"
+      probes:
+        enabled: "*"
+  endpoints:
+    enabled-by-default: true
+    web:
+      base-path: "/manage"
+      exposure:
+        include: "metrics,health,prometheus"
+
+springdoc:
+  api-docs:
+    path: /api-docs
+    enabled: ${ENABLE_APIDOCS:true}
+  swagger-ui:
+    path: /api-swaggers.html
+    enabled: ${ENABLE_SWAGGER:true}
+
+message:
+  cause:
+    hide: ${HIDE_CAUSE_MESSAGE:false}
+
+user-pool:
+  url: http://localhost:9062
+  app-id: "app-id-001"
+  api-key: "5D02kDAQPHnOGUQbD95F1l937npNSCM="
+  mock: true
+  allow-all-certs: false
+
+key-management:
+  url: ${KMS_API_URL:https://keymanagement.com:5981/}
+  allow-all-certs: ${KMS_ALLOW_ALL_CERTS:true}
+  passphrase-key-filename: passphrase_key.json
+  access-token-key-filename: access_key.json
+  refresh-token-key-filename: refresh_key.json
+  mock: ${MOCK_KMS:true}
+
+app-properties:
+  expire-access-token: ${EXPIRED_ACCESS_TOKEN:15}
+  expire-refresh-token: ${EXPIRED_REFRESH_TOKEN:240}
+  expire-auth-code: ${EXPIRED_AUTH_CODE:5}
+  iss: OAUTH
+  login-url: https://account.authentication.com
+
+redis:
+    host: ${REDIS_HOST:localhost}
+    port: ${REDIS_PORT:6379}
+
+proxy:
+  host: nproxy.scb.co.th
+  port: 8080

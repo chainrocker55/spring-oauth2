@@ -1,0 +1,9 @@
+package com.oauth.constant
+
+object CacheName {
+    const val ACCESS_TOKEN_CRYPTO = "ACCESS_TOKEN_CRYPTO"
+    const val REFRESH_TOKEN_CRYPTO = "REFRESH_TOKEN_CRYPTO"
+    const val PASSPHRASE_TOKEN_CRYPTO = "PASSPHRASE_TOKEN_CRYPTO"
+    const val ACCESS_TOKEN_KEY_PAIR = "ACCESS_TOKEN_KEY_PAIR"
+    const val REFRESH_TOKEN_KEY_PAIR = "REFRESH_TOKEN_KEY_PAIR"
+}
